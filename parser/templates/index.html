@@ -2,7 +2,7 @@
 
 {% block container %}
     {% comment %} 
-      parameter passed are lanes, tasks, events, processes, gateways and flows
+      parameter passed are lanes, tasks, events, processes, gateways, flows, datastores and subprocesses
       which are lists of the corresponding elements
     {% endcomment %}
 
@@ -19,18 +19,20 @@
     </article>
 
     <article>
-    <h2>Statistics</h2>
-
-      
+      <h2>Statistics</h2>
       <p>Number of Lanes: {{ lanes|length }}</p>
-    <p>Number of Tasks: {{ tasks|length }}</p>
-    <p>Number of Events: {{ events|length }}</p>
-    <p>Number of Processes: {{ processes|length }}</p>
-    <p>Number of Gateways: {{ gateways|length }}</p>
-    <p>Number of Flows: {{ flows|length }}</p></article>
-
-   
-
+      <!-- <p>Number of Tasks: {{ tasks|length }}</p> -->
+      <p>Number of Tasks: {{ num_tasks}}</p>
+      <!-- <p>Number of Events: {{ events|length }}</p> -->
+      <p>Number of Events: {{ num_events }}</p>
+      <!-- <p>Number of Processes: {{ processes|length }}</p> -->
+      <p>Number of Processes: {{ num_processes }}</p>
+      <p>Number of Gateways: {{ gateways|length }}</p>
+      <p>Number of Flows: {{ flows|length }}</p>
+      <p>Number of Datastores: {{ datastores|length }}</p>
+      <p>Number of Subprocesses: {{ subprocesses|length }}</p>
+    </article>
+    
     <article>
      
     <h2>Names</h2>
@@ -40,17 +42,21 @@
           <table>
             <thead>
                 <tr>
-                    <th>Task</th>
+                    <th><b>Task</b></th>
                 </tr>
             </thead>
             <tbody>
-              {% comment %} print the keys in a dictionary named task_data {% endcomment %}
-              {% for task in tasks %}
+              {% if tasks|length == 0 %}
                 <tr>
-                  <td>{{ task }}</td>
-                </tr>
-              {% endfor %}
-              
+                  <td>None</td>
+              </tr>
+              {% else %}
+                {% for task in tasks %}
+                  <tr>
+                    <td>{{ task }}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
             </tbody>
         </table>
         </div>
@@ -58,15 +64,21 @@
           <table>
             <thead>
                 <tr>
-                    <th>Events</th>
+                    <th><b>Events</b></th>
                 </tr>
             </thead>
             <tbody>
-              {% for event in events %}
+              {% if events|length == 0 %}
                 <tr>
-                  <td>{{ event }}</td>
-                </tr>
-              {% endfor %}
+                  <td>None</td>
+              </tr>
+              {% else %}
+                {% for event in events %}
+                  <tr>
+                    <td>{{ event }}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
             </tbody>
     
           </table>
@@ -82,15 +94,21 @@
           <table>
             <thead>
                 <tr>
-                    <th>Gateways</th>
+                    <th><b>Gateways</b></th>
                 </tr>
             </thead>
             <tbody>
-              {% for gateway in gateways %}
+              {% if gateways|length == 0 %}
                 <tr>
-                  <td>{{ gateway }}</td>
-                </tr>
-              {% endfor %}
+                  <td>None</td>
+              </tr>
+              {% else %}
+                {% for gateway in gateways %}
+                  <tr>
+                    <td>{{ gateway }}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
             </tbody>
         </table>
         </div>
@@ -98,17 +116,22 @@
           <table>
             <thead>
                 <tr>
-                    <th>Lanes</th>
+                    <th><b>Lanes</b></th>
                 </tr>
             </thead>
             <tbody>
-              {% for lane in lanes %}
+              {% if lanes|length == 0 %}
                 <tr>
-                  <td>{{ lane }}</td>
-                </tr>
-              {% endfor %}
+                  <td>None</td>
+              </tr>
+              {% else %}
+                {% for lane in lanes %}
+                  <tr>
+                    <td>{{ lane }}</td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
             </tbody>
-    
           </table>
         </div>
       

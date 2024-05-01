@@ -9,7 +9,6 @@ from . import forms
 
 xmlpath = "static/upload/bpmn.xml"
 
-
 def readfile(request):
     f = open(xmlpath, "r")
     if f.mode == 'r':
@@ -30,6 +29,8 @@ def result(request):
     tasks = []
     gateways = []
     flows = []
+    datastores = []
+    subprocesses = []
 
     # go into bpmn:definitions child 
     for child in myroot:
@@ -45,85 +46,94 @@ def result(request):
                 for lane in laneSet:
                     lanelist.append(lane)
 
-    for process in processlist:
-        for child in process:
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}startEvent":
+            # events
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}startEvent":
+                events.append(child)    
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}endEvent":
                 events.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}endEvent":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}intermediateCatchEvent":
                 events.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}intermediateCatchEvent":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}intermediateThrowEvent":
                 events.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}intermediateThrowEvent":
-                events.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}boundaryEvent":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}boundaryEvent":
                 events.append(child)
 
-    for process in processlist:
-        for child in process:
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}task":
+            # tasks
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}task":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}userTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}userTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}serviceTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}serviceTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}scriptTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}scriptTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}businessRuleTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}businessRuleTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}sendTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}sendTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}receiveTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}receiveTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}manualTask":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}manualTask":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}callActivity":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}callActivity":
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}subProcess":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}subProcess":
+                subprocesses.append(child)
+                # adding subprocesses to tasks list as well for calculating time 
                 tasks.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}transaction":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}transaction":
                 tasks.append(child)
 
-    for process in processlist:
-        for child in process:
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}exclusiveGateway":
+            # gateways
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}exclusiveGateway":
                 gateways.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}inclusiveGateway":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}inclusiveGateway":
                 gateways.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}parallelGateway":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}parallelGateway":
                 gateways.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}eventBasedGateway":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}eventBasedGateway":
                 gateways.append(child)
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}complexGateway":
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}complexGateway":
                 gateways.append(child)
-
-    for process in processlist:
-        for child in process:
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}sequenceFlow":
+            
+            # flows
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}sequenceFlow":
                 flows.append(child)
+
+            # data stores
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}dataStoreReference":
+                datastores.append(child)
+            
+            # subprocesses
+            elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}subProcess":
+                subprocesses.append(child)
 
     template_name = "index.html"
 
     processes_data = {}
-
     for process in processlist:
-        processes_data[process.attrib['name']] = 0
+        for child in process:
+            if process.attrib.get('name'):
+                processes_data[process.attrib['name']] = 0
 
     # store name of the lanes, tasks, events and processes in a list
 
     lanes_data = {}
 
     for lane in lanelist:
-        lanes_data[lane.attrib['name']] = 0
+        if lane.attrib.get('name'):
+            lanes_data[lane.attrib['name']] = 0
 
     task_data = {}
-    total_time = 0
-
     event_data = {}
 
+    total_time = 0
     cycle_time = 0.0
 
     # go into extensionElements tag
-    for task in tasks:
+    for task in tasks:            
+        if task.attrib.get('name'):
+            task_data[task.attrib['name']] = 0
         for child in task:
             if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}extensionElements":
                 for child2 in child:
@@ -151,55 +161,69 @@ def result(request):
                                         for child4 in process:
                                             if child4.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}task":
                                                 if child4.attrib['id'] == task.attrib['id']:
-                                                    processes_data[process.attrib['name']] += int(
-                                                        child3.attrib['value'])
+                                                    processes_data[process.attrib['name']] += int(child3.attrib['value'])
                         cycle_time += current_time * current_probability
 
     print("Total time: " + str(total_time))
 
     for event in events:
-        event_data[event.attrib['name']] = 0
-        for child in event:
-            if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}extensionElements":
-                for child2 in child:
-                    if child2.tag == "{http://camunda.org/schema/zeebe/1.0}properties":
-                        current_time = 0.0
-                        current_probability = 1.0
-                        for child3 in child2:
-                            if child3.tag == "{http://camunda.org/schema/zeebe/1.0}property":
-                                # check if it have a Probability property
-                                if child3.attrib['name'] == "Probability":
-                                    current_probability = float(child3.attrib['value'])
-                                # get the Time property 
-                                if child3.attrib['name'] == "Time":
-                                    event_data[event.attrib['name']] = child3.attrib['value']
-                                    current_time = int(child3.attrib['value'])
-                                    total_time += int(child3.attrib['value'])
-                                    # check if the task is in a lane
-                                    for lane in lanelist:
-                                        for child4 in lane:
-                                            if child4.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}flowNodeRef":
-                                                if child4.text == event.attrib['id']:
-                                                    lanes_data[lane.attrib['name']] += int(child3.attrib['value'])
-                                    # check if the task is in a process
-                                    for process in processlist:
-                                        for child4 in process:
-                                            if child4.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}event":
-                                                if child4.attrib['id'] == event.attrib['id']:
-                                                    processes_data[process.attrib['name']] += int(
-                                                        child3.attrib['value'])
-                        cycle_time += current_time * current_probability
+        if event.attrib.get('name'):
+            event_data[event.attrib['name']] = 0
+            for child in event:
+                if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}extensionElements":
+                    for child2 in child:
+                        if child2.tag == "{http://camunda.org/schema/zeebe/1.0}properties":
+                            current_time = 0.0
+                            current_probability = 1.0
+                            for child3 in child2:
+                                if child3.tag == "{http://camunda.org/schema/zeebe/1.0}property":
+                                    # check if it have a Probability property
+                                    if child3.attrib['name'] == "Probability":
+                                        current_probability = float(child3.attrib['value'])
+                                    # get the Time property 
+                                    if child3.attrib['name'] == "Time":
+                                        event_data[event.attrib['name']] = child3.attrib['value']
+                                        current_time = int(child3.attrib['value'])
+                                        total_time += int(child3.attrib['value'])
+                                        # check if the task is in a lane
+                                        for lane in lanelist:
+                                            for child4 in lane:
+                                                if child4.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}flowNodeRef":
+                                                    if child4.text == event.attrib['id']:
+                                                        lanes_data[lane.attrib['name']] += int(child3.attrib['value'])
+                                        # check if the task is in a process
+                                        for process in processlist:
+                                            for child4 in process:
+                                                if child4.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}event":
+                                                    if child4.attrib['id'] == event.attrib['id']:
+                                                        processes_data[process.attrib['name']] += int(
+                                                            child3.attrib['value'])
+                            cycle_time += current_time * current_probability
 
     gateways_name = []
 
     for gateway in gateways:
-        gateways_name.append(gateway.attrib['name'])
+        # add XOR, OR etc for the types of gatways
+        # replace the type of gateway with XOR, OR etc
+        g_type = gateway.tag.split("}")[1]
+        
+        if g_type == 'exclusiveGateway':
+            g_type = '(XOR)'
+        elif g_type == 'inclusiveGateway':
+            g_type = '(OR)'
+        elif g_type == 'parallelGateway':
+            g_type = '(AND)'
+        elif g_type == 'eventBasedGateway':
+            g_type = '(Event Based)'
+        
+         
+        gateways_name.append(gateway.attrib['name'] + ' ' + g_type)
 
     sum_events = 0
     sum_tasks = 0
     sum_lanes = 0
     sum_processes = 0
-
+    
     for event in event_data:
         sum_events += int(event_data[event])
 
@@ -212,14 +236,20 @@ def result(request):
     for process in processes_data:
         sum_processes += int(processes_data[process])
 
-    if os.path.isfile("static/upload/bpmn.xml"):
-        os.remove("static/upload/bpmn.xml")
+    # if os.path.isfile("static/upload/bpmn.xml"):
+    #     os.remove("static/upload/bpmn.xml")
+
+    num_events = len(events)
+    num_tasks = len(tasks)
+    num_processes = len(processlist)
 
     # display the numbers of lanes, tasks, events and processes
     return render(request, template_name,
                   {'lanes': lanes_data, 'tasks': task_data, 'events': event_data, 'processes': processes_data,
-                   'gateways': gateways_name, 'flows': flows, 'total_time': total_time, 'sum_events': sum_events,
-                   'sum_tasks': sum_tasks, 'sum_lanes': sum_lanes, 'sum_processes': sum_processes,
+                   'gateways': gateways_name, 'flows': flows, 'datastores': datastores, 'subprocesses': subprocesses, 
+                   'num_events': num_events, 'num_tasks': num_tasks,    'num_processes': num_processes,
+                   'sum_events': sum_events, 'sum_tasks': sum_tasks, 'sum_lanes': sum_lanes, 'sum_processes': sum_processes,
+                   'total_time': total_time, 
                    'cycle_time': cycle_time})
 
 

@@ -1,2 +1,4 @@
 *.pyc
+lib/*
+bin/*
 static/upload/*
