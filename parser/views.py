@@ -15,12 +15,10 @@ def readfile(request):
         contents = f.read()
     return contents
 
-
 def result(request):
-    # return error if file is not present
     if not os.path.exists(xmlpath):
         return upload(request, error="File not found")
-
+    
     myroot = ElTr.fromstring(readfile(request))
 
     lanelist = []
@@ -45,7 +43,7 @@ def result(request):
                 laneSet = child
                 for lane in laneSet:
                     lanelist.append(lane)
-
+                    
             # events
             elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}startEvent":
                 events.append(child)    
@@ -103,7 +101,7 @@ def result(request):
             # data stores
             elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}dataStoreReference":
                 datastores.append(child)
-            
+
             # subprocesses
             elif child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}subProcess":
                 subprocesses.append(child)
@@ -127,25 +125,25 @@ def result(request):
     task_data = {}
     event_data = {}
 
-    total_time = 0
+    total_time = 0.0
     cycle_time = 0.0
 
     # go into extensionElements tag
-    for task in tasks:            
+    for task in tasks:
         if task.attrib.get('name'):
             task_data[task.attrib['name']] = 0
         for child in task:
             if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}extensionElements":
                 for child2 in child:
                     if child2.tag == "{http://camunda.org/schema/zeebe/1.0}properties":
-                        current_time = 0.0
+                        current_time = 0.0 
                         current_probability = 1.0
                         for child3 in child2:
                             if child3.tag == "{http://camunda.org/schema/zeebe/1.0}property":
                                 # check if it have a Probability property
                                 if child3.attrib['name'] == "Probability":
                                     current_probability = float(child3.attrib['value'])
-                                # get the Time property 
+                                # get the Time property
                                 if child3.attrib['name'] == "Time":
                                     task_data[task.attrib['name']] = child3.attrib['value']
                                     total_time += int(child3.attrib['value'])
@@ -163,7 +161,6 @@ def result(request):
                                                 if child4.attrib['id'] == task.attrib['id']:
                                                     processes_data[process.attrib['name']] += int(child3.attrib['value'])
                         cycle_time += current_time * current_probability
-
     print("Total time: " + str(total_time))
 
     for event in events:
@@ -199,11 +196,10 @@ def result(request):
                                                         processes_data[process.attrib['name']] += int(
                                                             child3.attrib['value'])
                             cycle_time += current_time * current_probability
-
     gateways_name = []
 
     for gateway in gateways:
-        # add XOR, OR etc for the types of gatways
+        # add XOR, OR etc for the types of gateways
         # replace the type of gateway with XOR, OR etc
         g_type = gateway.tag.split("}")[1]
         
@@ -215,8 +211,7 @@ def result(request):
             g_type = '(AND)'
         elif g_type == 'eventBasedGateway':
             g_type = '(Event Based)'
-        
-         
+                 
         gateways_name.append(gateway.attrib['name'] + ' ' + g_type)
 
     sum_events = 0
@@ -240,17 +235,18 @@ def result(request):
     #     os.remove("static/upload/bpmn.xml")
 
     num_events = len(events)
-    num_tasks = len(tasks)
+    num_tasks = len(tasks) - len(subprocesses) # subtract subprocesses from tasks as it was used in tasks list as well for time calculation
     num_processes = len(processlist)
 
     # display the numbers of lanes, tasks, events and processes
     return render(request, template_name,
                   {'lanes': lanes_data, 'tasks': task_data, 'events': event_data, 'processes': processes_data,
                    'gateways': gateways_name, 'flows': flows, 'datastores': datastores, 'subprocesses': subprocesses, 
-                   'num_events': num_events, 'num_tasks': num_tasks,    'num_processes': num_processes,
+                   'num_events': num_events, 'num_tasks': num_tasks, 'num_processes': num_processes,
                    'sum_events': sum_events, 'sum_tasks': sum_tasks, 'sum_lanes': sum_lanes, 'sum_processes': sum_processes,
                    'total_time': total_time, 
-                   'cycle_time': cycle_time})
+                   'cycle_time': cycle_time}
+                )
 
 
 # upload file
