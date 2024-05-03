@@ -10,23 +10,6 @@ from . import forms
 
 xmlpath = "static/upload/bpmn.xml"
 
-def addActivityTime(root):
-    # Define the minimum and maximum duration for the activities
-    min_duration = 5
-    max_duration = 15
-    
-    # Loop through each activity
-    for activity in root.iter('{http://www.wfmc.org/2009/XPDL2.2}Activity'):
-        # Generate a random duration between min_duration and max_duration
-        random_duration = random.randint(min_duration, max_duration)
-
-        # Add the duration as an attribute to the activity without namespace prefix
-        activity.set('Duration', str(random_duration))
-
-        # Print the activity and its new duration
-        name = activity.get('Name') or None
-        print(f"Activity ID: {activity.get('Id')}, Activity Name: { name }, Duration: {random_duration} Minutes")
-
 def readfile(request):
     f = open(xmlpath, "r")
     if f.mode == 'r':
@@ -40,8 +23,6 @@ def result(request):
         return upload(request, error="File not found")
 
     myroot = ElTr.fromstring(readfile(request))
-    
-    addActivityTime(myroot)
 
     lanelist = []
     processlist = []
@@ -54,7 +35,6 @@ def result(request):
 
     # go into bpmn:definitions child 
     for child in myroot:
-        print(child.tag)
         # find number of bpmn:process child
         if child.tag == "{http://www.omg.org/spec/BPMN/20100524/MODEL}process":
             # save the all process child in a list
