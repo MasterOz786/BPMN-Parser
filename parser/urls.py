@@ -11,8 +11,9 @@ sitemaps = {
 }
 
 urlpatterns = [
-    path('', views.upload, name='upload'),
     # file upload
+    path('', views.upload, name='upload'),
+    # results generated after parsing
     path('result/', views.result, name='result'),
     path(
         "sitemap.xml",
